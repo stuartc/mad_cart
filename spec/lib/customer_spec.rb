@@ -20,9 +20,13 @@ describe MadCart::Customer do
 
     c = MadCart::Customer.new(:first_name => 'Bob', :last_name => 'Sagat', :email => 'bob@sagat.com')
 
-    puts c.initial_attributes.inspect
-    puts c.inspect
     c.attributes.should eql({:name => 'Bob', :last_name => 'Sagat', :email => 'bob@sagat.com'})
+  end
+  
+  it "exposes all additional attributes provided by the api" do
+    c = MadCart::Customer.new(:first_name => 'Bob', :last_name => 'Sagat', :email => 'bob@sagat.com', :with => 'some', :additional => 'fields' )
+
+    c.additional_attributes.should eql({:with => 'some', :additional => 'fields'})
   end
 
 end

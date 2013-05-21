@@ -4,6 +4,11 @@
 # loaded once.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require 'simplecov'
+SimpleCov.start do
+  add_filter "/vendor/"
+end
+
 require "mad_cart"
 require 'vcr'
 
@@ -22,4 +27,10 @@ end
 VCR.config do |c|
   c.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
   c.stub_with :fakeweb
+end
+
+
+# helper methods
+def clear_config
+  Singleton.__init__(MadCart::Configuration)
 end

@@ -11,6 +11,15 @@ describe MadCart::Store::BigCommerce do
       lambda { MadCart::Store::BigCommerce.new(:api_key => 'test', :username => 'test', :store_url => 'test') }.should_not raise_error
     end
     
+    it "authenticates via basic auth" do
+      connection = Faraday.new
+      Faraday.stub!(:new).and_return(connection)
+      
+      connection.should_receive(:basic_auth).with('username', 'api_key')
+      
+      MadCart::Store::BigCommerce.new(:api_key => 'api_key', :username => 'username', :store_url => 'url')
+    end
+    
   end
   
   describe "customers" do
@@ -45,29 +54,3 @@ describe MadCart::Store::BigCommerce do
   end
   
 end
-
- 
-# 
-#   test "#loop will iterate over all available resources" do
-# 
-#       api = BigCommerce::API.new(
-#         :api_key => '0ff0e3939f5f160f36047cf0caa6f699fe24bdeb', 
-#         :store_url => 'store-cr4wsh4.mybigcommerce.com', 
-#         :username => 'admin'
-#       ) 
-# 
-#       set_one = (1..200).to_a.map { |x| {:id => x} }
-#       set_two = (1..35).to_a.map { |x| {:id => x} }
-#       set_one.stubs(:max_id).returns(200)
-#       set_two.stubs(:max_id).returns(35)
-#       api.expects(:customers).with(:min_id => 1).returns(set_one)
-#       api.expects(:customers).with(:min_id => 201).returns(set_two)
-# 
-#       count = 0
-#       api.loop(:customers) { |customer| count += 1 }
-#       assert_equal 235, count
-# 
-#   end
-#   
-# 
-# end

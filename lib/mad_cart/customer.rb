@@ -1,11 +1,8 @@
 module MadCart
   class Customer
-    
-    def initialize(args={})
-      ["first_name", "last_name", "email"].each do |key|
-        raise(ArgumentError, "MadCart::Customer - Missing argument: #{key}") unless args.include? key
-      end
-    end
-    
+    include MadCartModel
+
+    ATTRIBUTES = [:id, :first_name, :last_name, :email]
+    ATTRIBUTES.each {|attr| attr_accessor(attr) }
   end
 end

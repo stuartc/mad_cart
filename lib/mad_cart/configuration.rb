@@ -3,18 +3,31 @@ require 'ostruct'
 module MadCart
   class Configuration
     include Singleton
-    
+
     def add_store(store_name, args={})
-      @data ||= {:stores => []}
-      
+      setup_data
+
       @data[:stores] << store_name
       @data[store_name.to_sym] = args
     end
-    
+
+    def attribute_map(data_model, attributes)
+      setup_data
+
+      @data[:attribute_maps][data_model.to_sym] = attributes
+    end
+
     def data
+      setup_data
       Data.new(@data)
-    end    
-    
+    end
+
+    private
+    def setup_data
+      @data ||= {:stores => []}
+      @data[:attribute_maps] ||= {}
+    end
+
     class Data < OpenStruct
       class ConfigurationError < NoMethodError; end
 

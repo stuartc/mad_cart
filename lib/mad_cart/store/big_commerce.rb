@@ -1,36 +1,32 @@
 module MadCart
   module Store
     class BigCommerce
-      
+
       class InvalidStore < StandardError; end;
       class ServerError < StandardError; end;
       class InvalidCredentials < StandardError; end;
-      
+
       attr_reader :connection, :api_key, :store_url, :username
-      
+
       def initialize(args)
         create_connection(args)
       end
-        
+
       def customers
-        return get_customer_hashes.map{|ch| MadCart::Customer.new( coerce_customer_properties(ch) ) }
+        return get_customer_hashes.map{|ch| MadCart::Customer.new(ch) }
       end
-      
+
       private
-      
-      def coerce_customer_properties(customer_hash)
-        customer_hash
-      end
-      
+
       def make_customer_request(params={:min_id => 1})
         parse_response { connection.get('customers.json', params) }
       end
-      
+
       def get_customer_hashes
         result = []
         loop(:make_customer_request) {|c| result << c }
         return result
-      end      
+      end
 
       def loop(source, &block)
 
@@ -38,7 +34,7 @@ module MadCart
 
         while true
           items.each &block
-          break if items.count < 200 
+          break if items.count < 200
           items = send(source, :min_id => items.max_id + 1 )
         end
 
@@ -66,26 +62,26 @@ module MadCart
       end
 
       def api_url_for(store_domain)
-       "https://#{store_domain}/api/v2/" 
+       "https://#{store_domain}/api/v2/"
       end
 
       def empty_body?(response)
         true if response.status == 204 || response.body.nil?
       end
-      
+
       def create_connection(args={})
         validate_connection_args(args)
-        
+
         @connection = Faraday.new(:url => api_url_for(args[:store_url]))
         @connection.basic_auth(args[:username], args[:api_key])
       end
-      
+
       def validate_connection_args(args={})
-        [:api_key, :store_url, :username].each do |key| 
+        [:api_key, :store_url, :username].each do |key|
           raise ArgumentError if !args.include? key
           instance_variable_set("@#{key}".to_sym, args[key])
         end
       end
-    end  
+    end
   end
 end

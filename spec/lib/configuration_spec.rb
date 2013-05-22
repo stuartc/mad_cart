@@ -9,12 +9,8 @@ describe "configuration" do
 
   describe "stores" do
 
-    it "allows stores to be added" do
-      MadCart.configure do |config|
-        config.add_store :big_commerce
-      end
-
-      MadCart.config.stores.should == [:big_commerce]
+    it "does not require store to be added if credentials are passed to constructor" do
+      lambda{ MadCart::Store::BigCommerce.new({:api_key => 'a_fake_key', :store_url => '/path/to/store', :username => 'bob'}) }.should_not raise_error
     end
 
     it "allows config values to be set for a store" do

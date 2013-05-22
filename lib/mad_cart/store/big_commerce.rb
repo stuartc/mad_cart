@@ -78,7 +78,7 @@ module MadCart
 
       def validate_connection_args(args={})
         [:api_key, :store_url, :username].each do |key|
-          raise ArgumentError if !args.include? key
+          raise(ArgumentError, "missing argument: #{key}") if !args.include? key
           instance_variable_set("@#{key}".to_sym, args[key])
         end
       end

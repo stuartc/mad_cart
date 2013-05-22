@@ -40,11 +40,11 @@ describe "configuration" do
     it "allows custom attribute names to be set" do
       lambda {
         MadCart.configure do |config|
-          config.attribute_map :product, {:name => :title}
+          config.attribute_map :product, {"name" => "title"}
         end
       }.should_not raise_error
 
-      MadCart.config.attribute_maps[:product].should == {:name => :title}
+      MadCart.config.attribute_maps["product"].should == {"name" => "title"}
     end
 
   end

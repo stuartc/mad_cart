@@ -9,6 +9,7 @@ require 'faraday'
 require 'extensions/string'
 require 'mad_cart/configuration'
 require 'mad_cart/attribute_mapper'
+require 'mad_cart/inheritable_attributes'
 require 'mad_cart/mad_cart_model'
 
 # data objects

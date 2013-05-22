@@ -8,13 +8,13 @@ module MadCart
       setup_data
 
       @data[:stores] << store_name
-      @data[store_name.to_sym] = args
+      @data[store_name.to_s] = args
     end
 
     def attribute_map(data_model, attributes)
       setup_data
 
-      @data[:attribute_maps][data_model.to_sym] = attributes
+      @data[:attribute_maps][data_model.to_s] = attributes
     end
 
     def data

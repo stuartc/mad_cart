@@ -17,6 +17,7 @@ require 'mad_cart/customer'
 require 'mad_cart/product'
 
 # stores
+require 'mad_cart/store/base'
 require 'mad_cart/store/big_commerce'
 require 'mad_cart/store/etsy'
 

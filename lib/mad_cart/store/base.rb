@@ -1,5 +1,6 @@
 module MadCart
   module Store
+    class SetupError < StandardError; end
     module Base
 
       def self.included(base)
@@ -10,7 +11,13 @@ module MadCart
         end
       end
 
+      def initialize(*args)
+        @init_args = args
+        after_initialize(*args)
+      end
+
       def connection
+        raise(SetupError, "It appears MyStore has overrided the default MadCart::Base initialize method. That's fine, but please store the initialize arguments as @init_args for the #connection method to use later. Remember to call #after_initialize in your initialize method should you require it.") unless @init_args
         @connection ||= execute_delegate(self.class.connection_delegate, {})
         return @connection
       end
@@ -22,6 +29,12 @@ module MadCart
         raise ArgumentError, "Invalid delegate" # if not returned by now
       end
       private :execute_delegate
+
+      def after_initialize(*args)
+        return nil unless self.class.after_init_delegate
+        execute_delegate(self.class.after_init_delegate, *args)
+      end
+      private :after_initialize
 
       module ClassMethods
         def create_connection_with(*args)
@@ -53,6 +66,9 @@ module MadCart
         end
 
         def after_initialize(*args)
+          @after_init_delegate = parse_delegate(args.first)
+
+          raise ArgumentError, "Invalid delegate for after_initialize: #{args.first.class}. Use Proc or Symbol." if @after_init_delegate.nil?
         end
 
         def parse_delegate(arg)

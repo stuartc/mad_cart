@@ -1,16 +1,14 @@
 module MadCart
   module MadCartModel
-    attr_accessor :additional_attributes
-
     def initialize(args={})
       self.additional_attributes = {}
 
-      self.class.attributes.each do |attr|
+      self.class.required_attrs.each do |attr|
         raise(ArgumentError, "missing argument: #{attr}") if !args.keys.map{|a| a.to_s }.include? attr
       end
 
       args.each do |k,v|
-        if self.class.attributes.include? k.to_s
+        if self.class.required_attrs.include? k.to_s
           self.send("#{k}=", v) unless v.nil?
         else
           self.additional_attributes[k.to_s] = v unless v.nil?
@@ -24,14 +22,14 @@ module MadCart
         include(AttributeMapper)
         include(InheritableAttributes)
         attr_accessor :additional_attributes
-        inheritable_attributes :attributes
+        inheritable_attributes :required_attrs
       end
     end
 
     module ClassMethods
       def required_attributes(*args)
-        @attributes = args.map{|a| a.to_s }
-        args.each{|a| attr_accessor(a) }
+        @required_attrs = args.map{|a| a.to_s }
+        attr_accessor(*args)
       end
     end
 

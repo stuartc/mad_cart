@@ -39,6 +39,32 @@ describe MadCart::Store::Base do
       
       lambda { MyStore.new(:api_key => 'key').connection }.should raise_error(ArgumentError, "Missing connection arguments: username")
     end
+    
+    it "retrieves configured connection arguments" do
+      class MyStore
+        create_connection_with Proc.new { }, :requires => [:several, :args]
+      end
+      
+      MadCart.configure do |config|
+        config.add_store :my_store, {:several => 'of', :args => 'yes?'}
+      end
+      
+      lambda { MyStore.new().connection }.should_not raise_error
+    end
+    
+    it "retrieves a combination of configured and initialised connection arguments" do
+      class MyStore
+        create_connection_with Proc.new { }, :requires => [:several, :args]
+      end
+      
+      MadCart.configure do |config|
+        config.add_store :my_store, {:several => 'only'}
+      end
+      
+      lambda { MyStore.new(:args => 'too').connection }.should_not raise_error
+    end
+    
+    
   end
 
   describe "fetch" do
@@ -107,10 +133,11 @@ describe MadCart::Store::Base do
 
       o = MyStore.new
       lambda { o.connection }.should raise_error(MadCart::Store::SetupError,
-        "It appears MyStore has overrided the default MadCart::Base initialize method. That's fine, but please store any required connection arguments as @init_args for the #connection method to use later. Remember to call #after_initialize in your initialize method should you require it.")
+          "It appears MyStore has overrided the default MadCart::Base initialize method. " +
+          "That's fine, but please store any required connection arguments as @init_args " +
+          "for the #connection method to use later. Remember to call #after_initialize " + 
+          "in your initialize method should you require it.")
     end
-
-    it "retrieves configured connection arguments"
   end
 
   describe "after_initialize" do

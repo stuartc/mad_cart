@@ -12,7 +12,7 @@ module MadCart
       end
 
       def initialize(*args)
-        @init_args = args.last
+        set_init_args(*args)
         after_initialize(*args)
       end
 
@@ -37,20 +37,39 @@ module MadCart
       private :after_initialize
       
       def validate_connection_args!
-        unless (self.class.required_connection_args || []).all? {|req| (@init_args || []).include?(req) }
-          raise(SetupError, "It appears MyStore has overrided the default MadCart::Base initialize method. That's fine, but please store any required connection arguments as @init_args for the #connection method to use later. Remember to call #after_initialize in your initialize method should you require it.") unless @init_args
-          raise(ArgumentError, "Missing connection arguments: #{(self.class.required_connection_args - @init_args.keys).join(', ')}")
-        end
+        raise(SetupError, "It appears MyStore has overrided the default MadCart::Base initialize method. " +
+                          "That's fine, but please store any required connection arguments as @init_args " +
+                          "for the #connection method to use later. Remember to call #after_initialize " +
+                          "in your initialize method should you require it.") if init_args_missing?
+
+        raise(ArgumentError,"Missing connection arguments: " +
+                            "#{(self.class.required_connection_args - @init_args.keys)
+                            .join(', ')}") unless self.class.required_connection_args.all? {|req| @init_args.include?(req) }
       end
       private :validate_connection_args!
+      
+      def init_args_missing?
+        !self.class.required_connection_args.empty? && @init_args.nil?
+      end
+      private :init_args_missing?
+      
+      def set_init_args(*args)
+        @init_args = configured_connection_args.merge(args.last || {})
+      end
+      private :set_init_args
+      
+      def configured_connection_args
+        MadCart.config.send(self.class.to_s.demodularise.underscore) || {}
+      end
 
       module ClassMethods
         def create_connection_with(*args)
           @connection_delegate = parse_delegate(args.first)
-          opts = args[1]
-          @required_connection_args = opts[:requires] if opts
+          opts = args[1] || {}
+          @required_connection_args = opts[:requires] || []
 
-          raise ArgumentError, "Invalid delegate for create_connection_with: #{args.first.class}. Use Proc or Symbol." if @connection_delegate.nil?
+          raise ArgumentError, "Invalid delegate for create_connection_with: " +
+                               "#{args.first.class}. Use Proc or Symbol. " if @connection_delegate.nil?
         end
 
         def fetch(model, options={})

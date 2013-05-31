@@ -12,12 +12,12 @@ module MadCart
       end
 
       def initialize(*args)
-        @init_args = args
+        @init_args = args.last
         after_initialize(*args)
       end
 
       def connection
-        raise(SetupError, "It appears MyStore has overrided the default MadCart::Base initialize method. That's fine, but please store the initialize arguments as @init_args for the #connection method to use later. Remember to call #after_initialize in your initialize method should you require it.") unless @init_args
+        validate_connection_args!
         @connection ||= execute_delegate(self.class.connection_delegate, {})
         return @connection
       end
@@ -35,11 +35,20 @@ module MadCart
         execute_delegate(self.class.after_init_delegate, *args)
       end
       private :after_initialize
+      
+      def validate_connection_args!
+        unless (self.class.required_connection_args || []).all? {|req| (@init_args || []).include?(req) }
+          raise(SetupError, "It appears MyStore has overrided the default MadCart::Base initialize method. That's fine, but please store any required connection arguments as @init_args for the #connection method to use later. Remember to call #after_initialize in your initialize method should you require it.") unless @init_args
+          raise(ArgumentError, "Missing connection arguments: #{(self.class.required_connection_args - @init_args.keys).join(', ')}")
+        end
+      end
+      private :validate_connection_args!
 
       module ClassMethods
         def create_connection_with(*args)
           @connection_delegate = parse_delegate(args.first)
-          @required_connection_args = args[1]
+          opts = args[1]
+          @required_connection_args = opts[:requires] if opts
 
           raise ArgumentError, "Invalid delegate for create_connection_with: #{args.first.class}. Use Proc or Symbol." if @connection_delegate.nil?
         end

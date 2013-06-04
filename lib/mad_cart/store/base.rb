@@ -59,7 +59,7 @@ module MadCart
       private :set_init_args
       
       def configured_connection_args
-        MadCart.config.send(self.class.to_s.demodularise.underscore) || {}
+        MadCart.config.send(self.class.to_s.demodulize.underscore) || {}
       end
 
       module ClassMethods
